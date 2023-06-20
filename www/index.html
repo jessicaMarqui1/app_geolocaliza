@@ -3,38 +3,121 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: content: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
-    <link rel="stylesheet" href="components/loader.css">
-    <link rel="stylesheet" href="css/style.css">
-    </head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        #gps {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background-color: #4CAF50;
+            color: #FFFFFF;
+            cursor: pointer;
+        }
+
+        #location-info {
+            margin-top: 16px;
+            padding: 8px;
+            background-color: #FFFFFF;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        #location-info.visible {
+            display: block;
+        }
+
+        #location-info p {
+            margin: 8px 0;
+        }
+    </style>
+</head>
 <body>
-       <script>
-      
-        function localiza(){
-            alert("teste");
-        document.addEventListener("click", function() {
-            var onSuccess = function(position) {
-        alert('Latitude: '          + position.coords.latitude          + '\n' +
-              'Longitude: '         + position.coords.longitude         + '\n' +
-              'Altitude: '          + position.coords.altitude          + '\n' +
-              'Accuracy: '          + position.coords.accuracy          + '\n' +
-              'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-              'Heading: '           + position.coords.heading           + '\n' +
-              'Speed: '             + position.coords.speed             + '\n' +
-              'Timestamp: '         + position.timestamp                + '\n');
-    };
+    <div class="container">
+        <h1>Geolocalização</h1>
+        <button id="gps">Obter Localização</button>
+        <div id="location-info">
+            <p><strong>Latitude:</strong> <span id="latitude"></span></p>
+            <p><strong>Longitude:</strong> <span id="longitude"></span></p>
+            <p><strong>Altitude:</strong> <span id="altitude"></span></p>
+            <p><strong>Precisão:</strong> <span id="accuracy"></span></p>
+            <p><strong>Última Atualização:</strong> <span id="timestamp"></span></p>
+        </div>
+    </div>
 
-    // onError Callback receives a PositionError object
-    //
-    function onError(error) {
-        alert('code: '    + error.code    + '\n' +
-              'message: ' + error.message + '\n');
-    }
+    <script>
+        var gpsButton = document.getElementById("gps");
+        var locationInfo = document.getElementById("location-info");
+        var latitudeElement = document.getElementById("latitude");
+        var longitudeElement = document.getElementById("longitude");
+        var altitudeElement = document.getElementById("altitude");
+        var accuracyElement = document.getElementById("accuracy");
+        var timestampElement = document.getElementById("timestamp");
 
-    navigator.geolocation.getCurrentPosition(onSuccess, onError);
+        gpsButton.addEventListener("click", function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                showError({ code: 0, message: "Geolocalização não suportada pelo navegador." });
+            }
         });
+
+        function showPosition(position) {
+            latitudeElement.textContent = position.coords.latitude.toFixed(6);
+            longitudeElement.textContent = position.coords.longitude.toFixed(6);
+            altitudeElement.textContent = position.coords.altitude ? position.coords.altitude.toFixed(2) + " metros" : "N/A";
+            accuracyElement.textContent = position.coords.accuracy ? position.coords.accuracy.toFixed(2) + " metros" : "N/A";
+            timestampElement.textContent = new Date(position.timestamp).toLocaleString();
+
+            locationInfo.classList.add("visible");
+        }
+
+        function showError(error) {
+            var errorMessage;
+            switch (error.code) {
+                case 1:
+                    errorMessage = "A permissão para geolocalização foi negada.";
+                    break;
+                case 2:
+                    errorMessage = "A informação de localização está indisponível.";
+                    break;
+                case 3:
+                    errorMessage = "O tempo para obter a localização expirou.";
+                    break;
+                default:
+                    errorMessage = "Ocorreu um erro ao obter a localização.";
+                    break;
+            }
+
+            latitudeElement.textContent = "";
+            longitudeElement.textContent = "";
+            altitudeElement.textContent = "";
+            accuracyElement.textContent = "";
+            timestampElement.textContent = "";
+
+            locationInfo.classList.remove("visible");
+
+            alert(errorMessage);
         }
     </script>
-	<button id="gps" onclick="localiza()">gps</button>
 </body>
 </html>
